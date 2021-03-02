@@ -71,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClick() {
-        imageView = findViewById(R.id.imageView);
         textView = findViewById(R.id.textViewTitle);
         back = findViewById(R.id.buttonBack);
         next = findViewById(R.id.buttonNext);
@@ -79,29 +78,22 @@ public class MainActivity extends AppCompatActivity {
         next.setOnClickListener(v -> {
             switch (count) {
                 case 0:
-                    Picasso.get().load(firstImg).into(imageView);
-                    textView.setText(firstTitle);
-                    count++;
+                    count = changeImg(firstImg, firstTitle, count, "next");
+                    back.setVisibility(View.INVISIBLE);
                     break;
                 case 1:
-                    Picasso.get().load(secondImg).into(imageView);
-                    textView.setText(secondTitle);
-                    count++;
+                    count = changeImg(secondImg, secondTitle, count, "next");
+                    back.setVisibility(View.VISIBLE);
                     break;
                 case 2:
-                    Picasso.get().load(thirdImg).into(imageView);
-                    textView.setText(thirdTitle);
-                    count++;
+                    count = changeImg(thirdImg, thirdTitle, count, "next");
                     break;
                 case 3:
-                    Picasso.get().load(fourthImg).into(imageView);
-                    textView.setText(fourthTitle);
-                    count++;
+                    count = changeImg(fourthImg, fourthTitle, count, "next");
                     break;
                 case 4:
-                    Picasso.get().load(fifthImg).into(imageView);
-                    textView.setText(fifthTitle);
-                    count++;
+                    count = changeImg(fifthImg, fifthTitle, count, "next");
+                    next.setVisibility(View.INVISIBLE);
                     break;
             }
         });
@@ -109,26 +101,31 @@ public class MainActivity extends AppCompatActivity {
         back.setOnClickListener(v -> {
             switch (count) {
                 case 2:
-                    Picasso.get().load(firstImg).into(imageView);
-                    textView.setText(firstTitle);
-                    count--;
+                    count = changeImg(firstImg, firstTitle, count, "back");
+                    back.setVisibility(View.INVISIBLE);
                     break;
                 case 3:
-                    Picasso.get().load(secondImg).into(imageView);
-                    textView.setText(secondTitle);
-                    count--;
+                    count = changeImg(secondImg, secondTitle, count, "back");
                     break;
                 case 4:
-                    Picasso.get().load(thirdImg).into(imageView);
-                    textView.setText(thirdTitle);
-                    count--;
+                    count = changeImg(thirdImg, thirdTitle, count, "back");
                     break;
                 case 5:
-                    Picasso.get().load(fourthImg).into(imageView);
-                    textView.setText(fourthTitle);
-                    count--;
+                    count = changeImg(fourthImg, fourthTitle, count, "back");
+                    next.setVisibility(View.VISIBLE);
                     break;
             }
         });
+    }
+
+    public int changeImg(String img, String title, int count, String direction) {
+        imageView = findViewById(R.id.imageView);
+        Picasso.get().load(img).into(imageView);
+        textView.setText(title);
+        if (direction.equals("next"))
+            count++;
+        else
+            count--;
+        return count;
     }
 }
