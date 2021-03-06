@@ -5,8 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -17,14 +20,20 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     private ImageView imageView;
-    private Button back, next;
-    private TextView textView;
-    private String firstImg, secondImg, thirdImg, fourthImg, fifthImg, firstTitle, secondTitle, thirdTitle, fourthTitle, fifthTitle;
-    private int count = 0;
+    private Button back, next, load;
+    private TextView textViewTitle, textViewDes;
+    private final Integer[] countPhotos = new Integer[] {5, 10, 15, 20, 50, 100};
+    private int count = 0, spinnerNumber = countPhotos[0];
+    private Spinner spinner;
+    private ArrayList<Picture> arrayList = new ArrayList<>(spinnerNumber);
+    private String JSONString;
+    private boolean buttonLoadPressed = false, JSONStringFinish = false;
+    private Picture picture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,97 +44,115 @@ public class MainActivity extends AppCompatActivity {
         AsyncTask.execute(() -> {
             StringBuffer content = new StringBuffer();
 
-            try {
-                URL url = new URL("https://api.nasa.gov/planetary/apod?api_key=L4juwY6U70NI1errn1qV0OTkPwWMzwPNj2cVHFw4&count=5&thumbs=false");
-                URLConnection urlConnection = url.openConnection();
+            while (true) {
+                if (buttonLoadPressed) {
+                    try {
+                        URL url = new URL("https://api.nasa.gov/planetary/apod?api_key=L4juwY6U70NI1errn1qV0OTkPwWMzwPNj2cVHFw4&count=" + spinnerNumber + "&thumbs=false");
+                        URLConnection urlConnection = url.openConnection();
 
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String line;
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                        String line;
 
-                while ((line = bufferedReader.readLine()) != null) {
-                    content.append(line + "\n");
+                        while ((line = bufferedReader.readLine()) != null) {
+                            content.append(line + "\n");
+                        }
+                        bufferedReader.close();
+                    } catch (Exception e) {
+                        System.out.println("Аддрес не найден");
+                    }
+                    JSONString = content.toString();
+                    JSONStringFinish = true;
+                    break;
                 }
-                bufferedReader.close();
-            } catch (Exception e) {
-                System.out.println("Аддрес не найден");
-            }
-
-            String JSONString = content.toString();
-
-            try {
-                JSONArray jsonArray = new JSONArray(JSONString);
-                firstImg = jsonArray.getJSONObject(0).getString("url");
-                firstTitle = jsonArray.getJSONObject(0).getString("title");
-                secondImg = jsonArray.getJSONObject(1).getString("url");
-                secondTitle = jsonArray.getJSONObject(1).getString("title");
-                thirdImg = jsonArray.getJSONObject(2).getString("url");
-                thirdTitle = jsonArray.getJSONObject(2).getString("title");
-                fourthImg = jsonArray.getJSONObject(3).getString("url");
-                fourthTitle = jsonArray.getJSONObject(3).getString("title");
-                fifthImg = jsonArray.getJSONObject(4).getString("url");
-                fifthTitle = jsonArray.getJSONObject(4).getString("title");
-            } catch (Exception e) {
-                System.out.println("Ошибка");
             }
         });
+
+        spinner = findViewById(R.id.spinner);
+        ArrayAdapter<Integer> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, countPhotos);
+        spinner.setAdapter(arrayAdapter);
+        AdapterView.OnItemSelectedListener itemSelectedListener = new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                spinnerNumber = (Integer) parent.getItemAtPosition(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        };
+        spinner.setOnItemSelectedListener(itemSelectedListener);
     }
 
     public void onClick() {
-        textView = findViewById(R.id.textViewTitle);
+        imageView = findViewById(R.id.imageView);
+        textViewTitle = findViewById(R.id.textViewTitle);
+        textViewDes = findViewById(R.id.textViewDes);
         back = findViewById(R.id.buttonBack);
         next = findViewById(R.id.buttonNext);
+        load = findViewById(R.id.buttonLoad);
+
+        load.setOnClickListener(v -> {
+            buttonLoadPressed = true;
+            while (true) {
+                if (JSONStringFinish) {
+                    try {
+                        JSONArray jsonArray = new JSONArray(JSONString);
+                        for (int i = 0; i < spinnerNumber; i++) {
+                            picture = new Picture(jsonArray.getJSONObject(i).getString("url"), jsonArray.getJSONObject(i).getString("title"), jsonArray.getJSONObject(i).getString("explanation"));
+                            arrayList.add(picture);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Ошибка");
+                    }
+                    break;
+                }
+            }
+
+            changeImg(arrayList.get(count));
+
+            load.setVisibility(View.INVISIBLE);
+            next.setVisibility(View.VISIBLE);
+            spinner.setVisibility(View.INVISIBLE);
+        });
 
         next.setOnClickListener(v -> {
-            switch (count) {
-                case 0:
-                    count = changeImg(firstImg, firstTitle, count, "next");
-                    back.setVisibility(View.INVISIBLE);
-                    break;
-                case 1:
-                    count = changeImg(secondImg, secondTitle, count, "next");
-                    back.setVisibility(View.VISIBLE);
-                    break;
-                case 2:
-                    count = changeImg(thirdImg, thirdTitle, count, "next");
-                    break;
-                case 3:
-                    count = changeImg(fourthImg, fourthTitle, count, "next");
-                    break;
-                case 4:
-                    count = changeImg(fifthImg, fifthTitle, count, "next");
-                    next.setVisibility(View.INVISIBLE);
-                    break;
+            if (count == 0) {
+                count++;
+                changeImg(arrayList.get(count));
+                back.setVisibility(View.VISIBLE);
+            }
+            else if (count == spinnerNumber - 2) {
+                count++;
+                changeImg(arrayList.get(count));
+                next.setVisibility(View.INVISIBLE);
+            }
+            else {
+                count++;
+                changeImg(arrayList.get(count));
             }
         });
 
         back.setOnClickListener(v -> {
-            switch (count) {
-                case 2:
-                    count = changeImg(firstImg, firstTitle, count, "back");
-                    back.setVisibility(View.INVISIBLE);
-                    break;
-                case 3:
-                    count = changeImg(secondImg, secondTitle, count, "back");
-                    break;
-                case 4:
-                    count = changeImg(thirdImg, thirdTitle, count, "back");
-                    break;
-                case 5:
-                    count = changeImg(fourthImg, fourthTitle, count, "back");
-                    next.setVisibility(View.VISIBLE);
-                    break;
+            if (count == 1) {
+                count--;
+                changeImg(arrayList.get(count));
+                back.setVisibility(View.INVISIBLE);
+            }
+            else if (count == spinnerNumber - 1) {
+                count--;
+                changeImg(arrayList.get(count));
+                next.setVisibility(View.VISIBLE);
+            }
+            else {
+                count--;
+                changeImg(arrayList.get(count));
             }
         });
     }
 
-    public int changeImg(String img, String title, int count, String direction) {
-        imageView = findViewById(R.id.imageView);
-        Picasso.get().load(img).into(imageView);
-        textView.setText(title);
-        if (direction.equals("next"))
-            count++;
-        else
-            count--;
-        return count;
+    private void changeImg(Picture url_title_des) {
+        Picasso.get().load(url_title_des.getUrl()).into(imageView);
+        textViewTitle.setText(url_title_des.getTitle());
+        textViewDes.setText("Описание: " + url_title_des.getDescription());
     }
 }
