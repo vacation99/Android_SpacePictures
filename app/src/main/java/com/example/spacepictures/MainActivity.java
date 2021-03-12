@@ -1,8 +1,5 @@
 package com.example.spacepictures;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -12,14 +9,10 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private final Integer[] countPhotos = new Integer[] {5, 10, 15, 20, 50, 100};
     private int count = 0, spinnerNumber = countPhotos[0];
     private Spinner spinner;
-    private ArrayList<Picture> arrayList = new ArrayList<>(countPhotos[0]);
+    public static ArrayList<Picture> arrayList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loadAction(View view) {
-        new SimpleAsyncTask().execute(spinnerNumber);
+        new SimpleAsyncTask(imageView, textViewTitle, textViewDes).execute(spinnerNumber);
 
         load.setVisibility(View.INVISIBLE);
         next.setVisibility(View.VISIBLE);
@@ -101,44 +94,5 @@ public class MainActivity extends AppCompatActivity {
                 .into(imageView);
         textViewTitle.setText(url_title_des.getTitle());
         textViewDes.setText("Описание: " + url_title_des.getDescription());
-    }
-
-    class SimpleAsyncTask extends AsyncTask<Integer, Void, Void> {
-        @Override
-        protected Void doInBackground(Integer... integers) {
-            StringBuffer content = new StringBuffer();
-            try {
-                URL url = new URL("https://api.nasa.gov/planetary/apod?api_key=L4juwY6U70NI1errn1qV0OTkPwWMzwPNj2cVHFw4&count=" + integers[0] + "&thumbs=false");
-                URLConnection urlConnection = url.openConnection();
-
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                String line;
-
-                while ((line = bufferedReader.readLine()) != null) {
-                    content.append(line).append("\n");
-                }
-                bufferedReader.close();
-            } catch (Exception e) {
-                System.out.println("Аддрес не найден");
-            }
-            String JSONString = content.toString();
-            try {
-                JSONArray jsonArray = new JSONArray(JSONString);
-                for (int i = 0; i < spinnerNumber; i++) {
-                    Picture picture = new Picture(
-                            jsonArray.getJSONObject(i).getString("url"),
-                            jsonArray.getJSONObject(i).getString("title"),
-                            jsonArray.getJSONObject(i).getString("explanation"));
-                    arrayList.add(picture);
-                }
-            } catch (Exception e) {
-                System.out.println("Ошибка");
-            }
-            return null;
-        }
-        @Override
-        protected void onPostExecute(Void v) {
-            changeImg(arrayList.get(count));
-        }
     }
 }
