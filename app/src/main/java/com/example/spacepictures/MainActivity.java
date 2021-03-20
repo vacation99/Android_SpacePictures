@@ -14,6 +14,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private final Integer[] countPhotos = new Integer[] {5, 10, 15, 20, 50, 100};
     private int count = 0, spinnerNumber = countPhotos[0];
     private Spinner spinner;
-    public static ArrayList<Picture> arrayList = new ArrayList<>();
+    private ArrayList<Picture> arrayListPicture = new ArrayList<>();
+    private List<Object> arrayListObject = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +60,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loadAction(View view) {
-        new SimpleAsyncTask(imageView, textViewTitle, textViewDes).execute(spinnerNumber);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.nasa.gov/planetary/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
+
+        retrofitInterface.someResponse(spinnerNumber).enqueue(new Callback<List<Object>>() {
+            @Override
+            public void onResponse(Call<List<Object>> call, Response<List<Object>> response) {
+                arrayListObject.addAll(response.body());
+                for (int i = 0; i < spinnerNumber; i++) {
+                    Picture picture = new Picture(
+                            arrayListObject.get(i).getUrl(),
+                            arrayListObject.get(i).getTitle(),
+                            arrayListObject.get(i).getExplanation());
+                    arrayListPicture.add(picture);
+                }
+                changeImg(arrayListPicture.get(0));
+            }
+            @Override
+            public void onFailure(Call<List<Object>> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
 
         load.setVisibility(View.INVISIBLE);
         next.setVisibility(View.VISIBLE);
@@ -70,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else
             count++;
-        changeImg(arrayList.get(count));
+        changeImg(arrayListPicture.get(count));
     }
 
     public void backAction(View view) {
@@ -84,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else
             count--;
-        changeImg(arrayList.get(count));
+        changeImg(arrayListPicture.get(count));
     }
 
     public void changeImg(Picture url_title_des) {
