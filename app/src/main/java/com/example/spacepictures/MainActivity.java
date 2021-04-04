@@ -2,7 +2,6 @@ package com.example.spacepictures;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -48,18 +47,11 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayAdapter<Integer> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, countPhotos);
         spinner.setAdapter(arrayAdapter);
-        AdapterView.OnItemSelectedListener itemSelectedListener = new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                spinnerNumber = (Integer) parent.getItemAtPosition(position);
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        };
-        spinner.setOnItemSelectedListener(itemSelectedListener);
     }
 
     public void loadAction(View view) {
+        spinnerNumber = (Integer) spinner.getSelectedItem();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.nasa.gov/planetary/")
                 .addConverterFactory(GsonConverterFactory.create())
