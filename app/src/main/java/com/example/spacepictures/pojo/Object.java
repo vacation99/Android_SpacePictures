@@ -1,4 +1,4 @@
-package com.example.spacepictures;
+package com.example.spacepictures.pojo;
 
 public class Object {
     private String explanation, title ,url;

@@ -1,4 +1,6 @@
-package com.example.spacepictures;
+package com.example.spacepictures.retrofit;
+
+import com.example.spacepictures.pojo.Object;
 
 import java.util.List;
 

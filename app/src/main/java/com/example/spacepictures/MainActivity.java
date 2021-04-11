@@ -1,16 +1,19 @@
 package com.example.spacepictures;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.squareup.picasso.Picasso;
+import com.example.spacepictures.adapter.RecyclerViewAdapter;
+import com.example.spacepictures.object.Picture;
+import com.example.spacepictures.pojo.Object;
+import com.example.spacepictures.retrofit.RetrofitInterface;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,101 +24,88 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.OnImageSelectedListener {
 
-    private ImageView imageView;
-    private Button back, next, load;
-    private TextView textViewTitle, textViewDes;
-    private final Integer[] countPhotos = new Integer[] {5, 10, 15, 20, 50, 100};
-    private int count = 0, spinnerNumber = countPhotos[0];
-    private Spinner spinner;
-    private ArrayList<Picture> arrayListPicture = new ArrayList<>();
-    private List<Object> arrayListObject = new ArrayList<>();
+    private RecyclerView recyclerView;
+    private RecyclerViewAdapter recyclerViewAdapter;
+    private TextView textView;
+    private final int countPictures = 30;
+    private ArrayList<Picture> arrayListPicture = new ArrayList<>(countPictures);
+    private List<Object> arrayListObject = new ArrayList<>(countPictures);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imageView = findViewById(R.id.imageView);
-        textViewTitle = findViewById(R.id.textViewTitle);
-        textViewDes = findViewById(R.id.textViewDes);
-        spinner = findViewById(R.id.spinner);
-        back = findViewById(R.id.buttonBack);
-        next = findViewById(R.id.buttonNext);
-        load = findViewById(R.id.buttonLoad);
+        textView = findViewById(R.id.textViewMain);
+        recyclerView = findViewById(R.id.recyclerView);
 
-        ArrayAdapter<Integer> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, countPhotos);
-        spinner.setAdapter(arrayAdapter);
+        recyclerViewAdapter = new RecyclerViewAdapter(this);
+        recyclerView.setAdapter(recyclerViewAdapter);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+
+        if (savedInstanceState != null) {
+            arrayListPicture = savedInstanceState.getParcelableArrayList("save_array");
+            recyclerViewAdapter.setItems(arrayListPicture);
+            textView.setVisibility(View.INVISIBLE);
+            recyclerView.setVisibility(View.VISIBLE);
+        } else
+            getPictures();
     }
 
-    public void loadAction(View view) {
-        spinnerNumber = (Integer) spinner.getSelectedItem();
+    public void updatePictures(View view) {
+        arrayListObject.clear();
+        arrayListPicture.clear();
+        textView.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.INVISIBLE);
+        getPictures();
+    }
 
+    public void loadFavorites(View view) {
+        Intent intent = new Intent(this, FavoritesActivity.class);
+        startActivity(intent);
+    }
+
+    private void getPictures() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.nasa.gov/planetary/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
 
-        retrofitInterface.someResponse(spinnerNumber).enqueue(new Callback<List<Object>>() {
+        retrofitInterface.someResponse(countPictures).enqueue(new Callback<List<Object>>() {
             @Override
             public void onResponse(Call<List<Object>> call, Response<List<Object>> response) {
                 arrayListObject.addAll(response.body());
-                for (int i = 0; i < spinnerNumber; i++) {
-                    Picture picture = new Picture(
+                for (int i = 0; i < countPictures; i++) {
+                    arrayListPicture.add(new Picture(
                             arrayListObject.get(i).getUrl(),
                             arrayListObject.get(i).getTitle(),
-                            arrayListObject.get(i).getExplanation());
-                    arrayListPicture.add(picture);
+                            arrayListObject.get(i).getExplanation()));
                 }
-                changeImg(arrayListPicture.get(0));
+                recyclerViewAdapter.setItems(arrayListPicture);
+                textView.setVisibility(View.INVISIBLE);
+                recyclerView.setVisibility(View.VISIBLE);
             }
             @Override
             public void onFailure(Call<List<Object>> call, Throwable t) {
                 t.printStackTrace();
             }
         });
-
-        load.setVisibility(View.INVISIBLE);
-        next.setVisibility(View.VISIBLE);
-        spinner.setVisibility(View.INVISIBLE);
     }
 
-    public void nextAction(View view) {
-        if (count == 0) {
-            count++;
-            back.setVisibility(View.VISIBLE);
-        }
-        else if (count == spinnerNumber - 2) {
-            count++;
-            next.setVisibility(View.INVISIBLE);
-        }
-        else
-            count++;
-        changeImg(arrayListPicture.get(count));
+    @Override
+    public void onImageClick(int position) {
+        Intent intent = new Intent(this, FullscreenImageActivity.class);
+        intent.putExtra("array", arrayListPicture);
+        intent.putExtra("count", position);
+        startActivity(intent);
     }
 
-    public void backAction(View view) {
-        if (count == 1) {
-            count--;
-            back.setVisibility(View.INVISIBLE);
-        }
-        else if (count == spinnerNumber - 1) {
-            count--;
-            next.setVisibility(View.VISIBLE);
-        }
-        else
-            count--;
-        changeImg(arrayListPicture.get(count));
-    }
-
-    public void changeImg(Picture url_title_des) {
-        Picasso.get()
-                .load(url_title_des.getUrl())
-                .error(R.drawable.gif)
-                .into(imageView);
-        textViewTitle.setText(url_title_des.getTitle());
-        textViewDes.setText("Описание: " + url_title_des.getDescription());
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList("save_array", arrayListPicture);
     }
 }

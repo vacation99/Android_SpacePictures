@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">SpacePictures</string>
+    <string name="string_main">Идёт загрузка изображений</string>
+    <string name="string_button_next">Вперёд</string>
+    <string name="string_button_back">Назад</string>
+    <string name="string_des">Описание:</string>
+    <string name="string_fav">Избранное:</string>
+    <string name="string_save">Сохранить</string>
 </resources>
