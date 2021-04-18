@@ -79,5 +79,20 @@
             app:layout_constraintStart_toEndOf="@+id/buttonBack"
             app:layout_constraintTop_toBottomOf="@+id/imageViewFull" />
 
+        <Button
+            android:id="@+id/buttonDel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:onClick="delete"
+            android:text="@string/string_delete"
+            app:layout_constraintEnd_toStartOf="@+id/buttonNext"
+            app:layout_constraintStart_toEndOf="@+id/buttonBack"
+            app:layout_constraintTop_toBottomOf="@+id/imageViewFull" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

@@ -6,4 +6,5 @@
     <string name="string_des">Описание:</string>
     <string name="string_fav">Избранное:</string>
     <string name="string_save">Сохранить</string>
+    <string name="string_delete">Удалить</string>
 </resources>

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,23 +41,28 @@ public class FavoritesActivity extends AppCompatActivity implements RecyclerView
 
         if (savedInstanceState != null)
             arrayListPicture = savedInstanceState.getParcelableArrayList("save_array_fav");
-        else {
-            RealmResults<DataModel> realmResults = realm.where(DataModel.class).findAll();
+        else
+            loadFromRealm();
 
-            for (DataModel dataModel : realmResults) {
-                arrayListPicture.add(new Picture(dataModel.getUrl(), dataModel.getTitle(), dataModel.getDes()));
-            }
-        }
         recyclerViewAdapter.setItems(arrayListPicture);
     }
 
     public void clearFavorites(View view) {
-        realm.executeTransactionAsync(realm1 -> {
-            realm1.deleteAll();
-        }, () -> {
+        realm.executeTransactionAsync(
+                realm1 -> realm1.deleteAll(),
+                () -> {
             arrayListPicture.clear();
             recyclerViewAdapter.setItems(arrayListPicture);
         });
+    }
+
+    private void loadFromRealm() {
+        arrayListPicture.clear();
+        RealmResults<DataModel> realmResults = realm.where(DataModel.class).findAll();
+
+        for (DataModel dataModel : realmResults) {
+            arrayListPicture.add(new Picture(dataModel.getUrl(), dataModel.getTitle(), dataModel.getDes()));
+        }
     }
 
     @Override
@@ -65,7 +71,20 @@ public class FavoritesActivity extends AppCompatActivity implements RecyclerView
         intent.putExtra("array", arrayListPicture);
         intent.putExtra("count", position);
         intent.putExtra("fav", "fav");
-        startActivity(intent);
+        intent.putExtra("del", "del");
+        startActivityForResult(intent, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                loadFromRealm();
+                recyclerViewAdapter.setItems(arrayListPicture);
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override

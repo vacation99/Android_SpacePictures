@@ -38,6 +38,7 @@ public class FullscreenImageActivity extends AppCompatActivity {
         textViewDes = findViewById(R.id.textViewDes);
         back = findViewById(R.id.buttonBack);
         next = findViewById(R.id.buttonNext);
+        Button delete = findViewById(R.id.buttonDel);
         Button save = findViewById(R.id.buttonSave);
 
         Realm.init(this);
@@ -54,6 +55,11 @@ public class FullscreenImageActivity extends AppCompatActivity {
             save.setVisibility(View.VISIBLE);
         else
             save.setVisibility(View.INVISIBLE);
+
+        if (bundle.getString("del") == null)
+            delete.setVisibility(View.INVISIBLE);
+        else
+            delete.setVisibility(View.VISIBLE);
 
         arrayListPicture = bundle.getParcelableArrayList("array");
 
@@ -95,6 +101,17 @@ public class FullscreenImageActivity extends AppCompatActivity {
             realm1.copyToRealm(dataModel);
         });
         Toast.makeText(this, "Сохранено", Toast.LENGTH_SHORT).show();
+    }
+
+    public void delete(View view) {
+        realm.executeTransactionAsync(realm1 -> {
+            DataModel dataModel = realm1.where(DataModel.class).equalTo("title", textViewTitle.getText().toString()).findFirst();
+            dataModel.deleteFromRealm();
+        }, () -> {
+            Toast.makeText(this, "Удалено из избранного", Toast.LENGTH_SHORT).show();
+            setResult(RESULT_OK);
+            finish();
+        });
     }
 
     private void changeImg(Picture url_title_des) {
