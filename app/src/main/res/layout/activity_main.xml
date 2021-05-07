@@ -37,12 +37,14 @@
         android:layout_marginRight="20dp"
         android:layout_marginBottom="20dp"
         android:clickable="true"
+        android:focusable="true"
         android:onClick="updatePictures"
+        android:visibility="invisible"
         app:backgroundTint="#FF9800"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:maxImageSize="40dp"
-        app:srcCompat="@android:drawable/ic_menu_rotate" />
+        app:maxImageSize="45dp"
+        app:srcCompat="@drawable/ic_action_update" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionButtonFav"
@@ -52,10 +54,22 @@
         android:layout_marginRight="20dp"
         android:layout_marginBottom="20dp"
         android:clickable="true"
+        android:focusable="true"
         android:onClick="loadFavorites"
+        android:visibility="invisible"
         app:backgroundTint="#FF9800"
         app:layout_constraintBottom_toTopOf="@+id/floatingActionButtonUpdate"
         app:layout_constraintEnd_toEndOf="parent"
-        app:maxImageSize="40dp"
-        app:srcCompat="@android:drawable/btn_star_big_on" />
+        app:maxImageSize="45dp"
+        app:srcCompat="@drawable/ic_action_fav_1" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewMain" />
 </androidx.constraintlayout.widget.ConstraintLayout>

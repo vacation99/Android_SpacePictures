@@ -3,6 +3,7 @@ package com.example.spacepictures;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,12 +49,16 @@ public class FavoritesActivity extends AppCompatActivity implements RecyclerView
     }
 
     public void clearFavorites(View view) {
-        realm.executeTransactionAsync(
-                realm1 -> realm1.deleteAll(),
-                () -> {
-            arrayListPicture.clear();
-            recyclerViewAdapter.setItems(arrayListPicture);
-        });
+        if (!arrayListPicture.isEmpty()) {
+            realm.executeTransactionAsync(
+                    realm1 -> realm1.deleteAll(),
+                    () -> {
+                        arrayListPicture.clear();
+                        recyclerViewAdapter.setItems(arrayListPicture);
+                    });
+        } else {
+            Toast.makeText(this, "Избранное пустое", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadFromRealm() {
@@ -71,7 +76,6 @@ public class FavoritesActivity extends AppCompatActivity implements RecyclerView
         intent.putExtra("array", arrayListPicture);
         intent.putExtra("count", position);
         intent.putExtra("fav", "fav");
-        intent.putExtra("del", "del");
         startActivityForResult(intent, 1);
     }
 

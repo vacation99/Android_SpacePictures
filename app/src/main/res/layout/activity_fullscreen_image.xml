@@ -6,93 +6,84 @@
     android:layout_height="match_parent"
     tools:context=".FullscreenImageActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <ImageView
-            android:id="@+id/imageViewFull"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="480dp"
-            android:layout_marginTop="5dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/textViewTitle"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="5dp"
-            android:gravity="center"
-            android:textSize="24sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+                <com.github.chrisbanes.photoview.PhotoView
+                    android:id="@+id/photo_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="480dp"
+                    android:layout_marginTop="5dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
 
-        <TextView
-            android:id="@+id/textViewDes"
-            android:layout_width="match_parent"
-            android:layout_height="324dp"
-            android:layout_marginStart="1dp"
-            android:layout_marginLeft="1dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/string_des"
-            android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonBack" />
+                <TextView
+                    android:id="@+id/textViewTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/buttonBack"
-            android:layout_width="80dp"
-            android:layout_height="50dp"
-            android:layout_marginStart="55dp"
-            android:layout_marginLeft="55dp"
-            android:layout_marginTop="5dp"
-            android:onClick="backAction"
-            android:text="@string/string_button_back"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageViewFull" />
+                <TextView
+                    android:id="@+id/textViewDes"
+                    android:layout_width="match_parent"
+                    android:layout_height="324dp"
+                    android:layout_marginStart="1dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginTop="5dp"
+                    android:text="@string/string_des"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/imageButtonBack" />
 
-        <Button
-            android:id="@+id/buttonNext"
-            android:layout_width="80dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="55dp"
-            android:layout_marginRight="55dp"
-            android:onClick="nextAction"
-            android:text="@string/string_button_next"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageViewFull" />
+                <ImageButton
+                    android:id="@+id/imageButtonNext"
+                    android:layout_width="70dp"
+                    android:layout_height="45dp"
+                    android:layout_marginStart="35dp"
+                    android:layout_marginLeft="35dp"
+                    android:layout_marginTop="5dp"
+                    android:onClick="nextAction"
+                    app:layout_constraintStart_toEndOf="@+id/imageButtonUnSave"
+                    app:layout_constraintTop_toBottomOf="@+id/photo_view"
+                    app:srcCompat="@drawable/ic_action_forward_1" />
 
-        <Button
-            android:id="@+id/buttonSave"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginRight="10dp"
-            android:onClick="save"
-            android:text="@string/string_save"
-            app:layout_constraintEnd_toStartOf="@+id/buttonNext"
-            app:layout_constraintStart_toEndOf="@+id/buttonBack"
-            app:layout_constraintTop_toBottomOf="@+id/imageViewFull" />
+                <ImageButton
+                    android:id="@+id/imageButtonBack"
+                    android:layout_width="70dp"
+                    android:layout_height="45dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="35dp"
+                    android:layout_marginRight="35dp"
+                    android:onClick="backAction"
+                    app:layout_constraintEnd_toStartOf="@+id/imageButtonUnSave"
+                    app:layout_constraintTop_toBottomOf="@+id/photo_view"
+                    app:srcCompat="@drawable/ic_action_back_1" />
 
-        <Button
-            android:id="@+id/buttonDel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginRight="10dp"
-            android:onClick="delete"
-            android:text="@string/string_delete"
-            app:layout_constraintEnd_toStartOf="@+id/buttonNext"
-            app:layout_constraintStart_toEndOf="@+id/buttonBack"
-            app:layout_constraintTop_toBottomOf="@+id/imageViewFull" />
+                <ImageButton
+                    android:id="@+id/imageButtonSave"
+                    android:layout_width="70dp"
+                    android:layout_height="45dp"
+                    android:layout_marginTop="5dp"
+                    android:onClick="save"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/photo_view"
+                    app:srcCompat="@drawable/ic_action_save_1" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageButton
+                    android:id="@+id/imageButtonUnSave"
+                    android:layout_width="70dp"
+                    android:layout_height="45dp"
+                    android:layout_marginTop="5dp"
+                    android:onClick="delete"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/photo_view"
+                    app:srcCompat="@drawable/ic_action_unsave_1" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

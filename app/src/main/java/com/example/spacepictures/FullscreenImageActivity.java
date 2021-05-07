@@ -3,7 +3,7 @@ package com.example.spacepictures;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.spacepictures.db.DataModel;
 import com.example.spacepictures.object.Picture;
+import com.github.chrisbanes.photoview.PhotoView;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -21,10 +22,11 @@ import io.realm.RealmConfiguration;
 
 public class FullscreenImageActivity extends AppCompatActivity {
 
-    private ImageView imageView;
+    private PhotoView photoView;
     private TextView textViewTitle, textViewDes;
-    private Button back, next;
+    private ImageButton imBack, imNext, imSave, imDelete;
     private int count;
+    private boolean visibility, favAct;
     private ArrayList<Picture> arrayListPicture = new ArrayList<>();
     Realm realm;
 
@@ -33,13 +35,13 @@ public class FullscreenImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fullscreen_image);
 
-        imageView = findViewById(R.id.imageViewFull);
+        photoView = findViewById(R.id.photo_view);
         textViewTitle = findViewById(R.id.textViewTitle);
         textViewDes = findViewById(R.id.textViewDes);
-        back = findViewById(R.id.buttonBack);
-        next = findViewById(R.id.buttonNext);
-        Button delete = findViewById(R.id.buttonDel);
-        Button save = findViewById(R.id.buttonSave);
+        imBack = findViewById(R.id.imageButtonBack);
+        imNext = findViewById(R.id.imageButtonNext);
+        imDelete = findViewById(R.id.imageButtonUnSave);
+        imSave = findViewById(R.id.imageButtonSave);
 
         Realm.init(this);
         realm = Realm.getInstance(new RealmConfiguration.Builder().name("space_pictures_DB.realm").build());
@@ -51,15 +53,7 @@ public class FullscreenImageActivity extends AppCompatActivity {
         else
             count = bundle.getInt("count");
 
-        if (bundle.getString("fav") == null)
-            save.setVisibility(View.VISIBLE);
-        else
-            save.setVisibility(View.INVISIBLE);
-
-        if (bundle.getString("del") == null)
-            delete.setVisibility(View.INVISIBLE);
-        else
-            delete.setVisibility(View.VISIBLE);
+        favAct = bundle.getString("fav") == null;
 
         arrayListPicture = bundle.getParcelableArrayList("array");
 
@@ -68,10 +62,10 @@ public class FullscreenImageActivity extends AppCompatActivity {
 
     public void nextAction(View view) {
         if (count == 0)
-            back.setVisibility(View.VISIBLE);
+            imBack.setVisibility(View.VISIBLE);
 
         if (count == arrayListPicture.size() - 2)
-            next.setVisibility(View.INVISIBLE);
+            imNext.setVisibility(View.INVISIBLE);
 
         count++;
 
@@ -80,10 +74,10 @@ public class FullscreenImageActivity extends AppCompatActivity {
 
     public void backAction(View view) {
         if (count == 1)
-            back.setVisibility(View.INVISIBLE);
+            imBack.setVisibility(View.INVISIBLE);
 
         if (count == arrayListPicture.size() - 1)
-            next.setVisibility(View.VISIBLE);
+            imNext.setVisibility(View.VISIBLE);
 
         count--;
 
@@ -99,8 +93,11 @@ public class FullscreenImageActivity extends AppCompatActivity {
             dataModel.setTitle(arrayListPicture.get(count).getTitle());
 
             realm1.copyToRealm(dataModel);
+        }, () -> {
+            imSave.setVisibility(View.INVISIBLE);
+            checkImgInDB();
+            Toast.makeText(this, "Сохранено в избранное", Toast.LENGTH_SHORT).show();
         });
-        Toast.makeText(this, "Сохранено", Toast.LENGTH_SHORT).show();
     }
 
     public void delete(View view) {
@@ -108,30 +105,52 @@ public class FullscreenImageActivity extends AppCompatActivity {
             DataModel dataModel = realm1.where(DataModel.class).equalTo("title", textViewTitle.getText().toString()).findFirst();
             dataModel.deleteFromRealm();
         }, () -> {
-            Toast.makeText(this, "Удалено из избранного", Toast.LENGTH_SHORT).show();
-            setResult(RESULT_OK);
-            finish();
+            if (!favAct) {
+                Toast.makeText(this, "Удалено из избранного", Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
+                finish();
+            } else {
+                checkImgInDB();
+                Toast.makeText(this, "Удалено из избранного", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
     private void changeImg(Picture url_title_des) {
+        checkImgInDB();
+
         if (count == 0 && arrayListPicture.size() == 1) {
-            back.setVisibility(View.INVISIBLE);
-            next.setVisibility(View.INVISIBLE);
+            imBack.setVisibility(View.INVISIBLE);
+            imNext.setVisibility(View.INVISIBLE);
         }
         if (count == 0)
-            back.setVisibility(View.INVISIBLE);
+            imBack.setVisibility(View.INVISIBLE);
 
         if (count == arrayListPicture.size() - 1)
-            next.setVisibility(View.INVISIBLE);
+            imNext.setVisibility(View.INVISIBLE);
 
         Picasso.get()
                 .load(url_title_des.getUrl())
                 .error(R.drawable.gif)
-                .into(imageView);
+                .into(photoView);
 
         textViewTitle.setText(url_title_des.getTitle());
         textViewDes.setText(getString(R.string.string_des) + " " + url_title_des.getDescription());
+    }
+
+    private void checkImgInDB() {
+        realm.executeTransactionAsync(realm1 -> {
+            DataModel dataModel = realm1.where(DataModel.class).equalTo("title", textViewTitle.getText().toString()).findFirst();
+            visibility = dataModel == null;
+        }, () -> {
+            if (visibility) {
+                imSave.setVisibility(View.VISIBLE);
+                imDelete.setVisibility(View.INVISIBLE);
+            } else {
+                imSave.setVisibility(View.INVISIBLE);
+                imDelete.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     @Override
